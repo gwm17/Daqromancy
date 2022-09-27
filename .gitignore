@@ -1,14 +1,10 @@
 *.o 
-*.root
 *.d
 *.so
 *.pcm
 *.png
 
-*.cxx
-*~
-
-setting/infl_*
+.vs/
 .vscode/
 build/
 bin/
