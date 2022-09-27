@@ -1,0 +1,15 @@
+*.o 
+*.root
+*.d
+*.so
+*.pcm
+*.png
+
+*.cxx
+*~
+
+setting/infl_*
+.vscode/
+build/
+bin/
+out/
