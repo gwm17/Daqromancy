@@ -31,7 +31,7 @@ namespace Daqromancy {
 			std::scoped_lock<std::mutex> guard(m_queueMutex);
 			m_queue.push_front(data);
 
-			std::scoped_lock<std::mutex> guard(m_conditionMutex);
+			std::scoped_lock<std::mutex> condGuard(m_conditionMutex);
 			m_conditional.notify_one();
 		}
 

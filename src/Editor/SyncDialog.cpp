@@ -4,16 +4,6 @@
 
 namespace Daqromancy {
 
-	static std::string SyncMethodToString(SyncMethod method)
-	{
-		switch (method)
-		{
-		case SyncMethod::SIn_TrigOut: return "SyncIn-TrigOut";
-		case SyncMethod::None: return "None";
-		}
-		return "None";
-	}
-
 	static std::string StartTypeToString(SyncStartType type)
 	{
 		switch (type)
@@ -46,7 +36,7 @@ namespace Daqromancy {
 		{
 			if (ImGui::BeginCombo("Method", SyncMethodToString(m_syncArgs.syncMethod).c_str()))
 			{
-				if (ImGui::Selectable("SyncIn-TrigOut", SyncMethod::SIn_TrigOut == m_syncArgs.syncMethod, ImGuiSelectableFlags_DontClosePopups))
+				if (ImGui::Selectable("S-In TrigOut", SyncMethod::SIn_TrigOut == m_syncArgs.syncMethod, ImGuiSelectableFlags_DontClosePopups))
 					m_syncArgs.syncMethod = SyncMethod::SIn_TrigOut;
 				if (ImGui::Selectable("None", SyncMethod::None == m_syncArgs.syncMethod, ImGuiSelectableFlags_DontClosePopups))
 					m_syncArgs.syncMethod = SyncMethod::None;
