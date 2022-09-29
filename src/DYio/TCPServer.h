@@ -22,7 +22,7 @@ namespace Daqromancy {
 		~TCPServerConnection();
 
 		bool IsConnected() const { return m_socket.is_open(); }
-		void Send(const BSMessage& message);
+		void Send(const DYMessage& message);
 
 		void Disconnect();
 
@@ -33,7 +33,7 @@ namespace Daqromancy {
 		asio::ip::tcp::socket m_socket;
 		asio::io_context& m_contextRef;
 
-		ThreadSafeQueue<BSMessage> m_queue;
+		ThreadSafeQueue<DYMessage> m_queue;
 	};
 
 	/*
@@ -86,7 +86,7 @@ namespace Daqromancy {
 
 
 	private:
-		void MessageClients(const BSMessage& message);
+		void MessageClients(const DYMessage& message);
 		void WaitForClient();
 
 		asio::io_context m_context;

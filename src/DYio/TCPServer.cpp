@@ -16,7 +16,7 @@ namespace Daqromancy {
 		that the loop of write calls and job submissions had stopped (or was not yet started), so we need to restart/start the 
 		cycle of writing data to the socket.
 	*/
-	void TCPServerConnection::Send(const BSMessage& message)
+	void TCPServerConnection::Send(const DYMessage& message)
 	{
 		asio::post(m_contextRef,
 			[this, message]()
@@ -38,13 +38,13 @@ namespace Daqromancy {
 
 	void TCPServerConnection::WriteHeader()
 	{
-		std::vector<char> headerData = m_queue.Front().GetHeaderRaw();
-		asio::async_write(m_socket, asio::buffer(headerData, headerData.size()),
+		uint64_t messageSize = m_queue.Front().size;
+		asio::async_write(m_socket, asio::buffer(&messageSize, sizeof(messageSize)),
 			[this](std::error_code ec, std::size_t length) //Callback upon completion
 			{
 				if (!ec)
 				{
-					if (m_queue.Front().Size() > 0)
+					if (m_queue.Front().size > 0)
 						WriteBody(); //submit next job to asio: write body data
 					else
 					{
@@ -64,7 +64,7 @@ namespace Daqromancy {
 
 	void TCPServerConnection::WriteBody()
 	{
-		asio::async_write(m_socket, asio::buffer(m_queue.Front().body, m_queue.Front().Size()),
+		asio::async_write(m_socket, asio::buffer(m_queue.Front().body, m_queue.Front().size),
 			[this](std::error_code ec, std::size_t length)
 			{
 				if (!ec)
@@ -140,7 +140,7 @@ namespace Daqromancy {
 					if (!m_dataHandle.dataQueue->IsEmpty())
 						continue;
 
-					BSMessage message(m_dataHandle.dataQueue->Front());
+					DYMessage message(m_dataHandle.dataQueue->Front());
 					MessageClients(message);
 					m_dataHandle.dataQueue->PopFront();
 				}
@@ -159,7 +159,7 @@ namespace Daqromancy {
 		m_dataHandle.dataQueue->ResetWakeup();
 	}
 
-	void TCPServer::MessageClients(const BSMessage& message)
+	void TCPServer::MessageClients(const DYMessage& message)
 	{
 		bool isAnyClientInvalid = false;
 		std::scoped_lock<std::mutex> guard(m_clientMutex);
