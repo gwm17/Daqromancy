@@ -119,9 +119,9 @@ endif()
 
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_compile_definitions(Daqromancy PRIVATE BS_RELEASE)
+    target_compile_definitions(Daqromancy PRIVATE DY_RELEASE)
 elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions(Daqromancy PRIVATE BS_DEBUG)
+    target_compile_definitions(Daqromancy PRIVATE DY_DEBUG)
 endif()
 
 #Some extra defs

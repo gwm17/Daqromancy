@@ -35,7 +35,7 @@ namespace Daqromancy {
 		{
 			for (int i = 0; i < args.channels; i++)
 			{
-				filename = args.name + "_CH_" + std::to_string(i) + ".bsbin";
+				filename = args.name + "_CH_" + std::to_string(i) + ".dybin";
 				key = SzudzikPairingFunction(args.handle, i);
 				m_files.insert_or_assign(key, DYFile(runPath / filename));
 				if (!(m_files[key].IsOpen()))

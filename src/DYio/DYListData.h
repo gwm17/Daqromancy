@@ -7,7 +7,7 @@ namespace Daqromancy {
 
     //This is the subset of DYData that will be transferred via binary writes/reads
     //on either network or file io
-	struct BSListData
+	struct DYListData
 	{
         uint16_t board;
         uint16_t channel;
@@ -75,7 +75,7 @@ namespace Daqromancy {
 	Again, rather nasty. Here we C-style cast the data in the buffer to our types in the list data,
 	write them to the input parameter reference, and then iterate forward the appropriate number of bytes.
 	*/
-	static std::size_t UnLoadBSListDataFromBuffer(const std::vector<char>& buffer, BSListData& data, std::size_t startPosition)
+	static std::size_t UnLoadBSListDataFromBuffer(const std::vector<char>& buffer, DYListData& data, std::size_t startPosition)
 	{
 		std::size_t position = startPosition;
 		if (buffer.size() - startPosition < Data::dataSize)
