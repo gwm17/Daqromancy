@@ -79,13 +79,13 @@ namespace Daqromancy {
 
 		//For iterator loops, need begin()/end() idiom
 
-		std::deque<T>::iterator begin()
+		typename std::deque<T>::iterator begin()
 		{
 			std::scoped_lock<std::mutex> guard(m_queueMutex);
 			return m_queue.begin();
 		}
 
-		std::deque<T>::iterator end()
+		typename std::deque<T>::iterator end()
 		{
 			std::scoped_lock<std::mutex> guard(m_queueMutex);
 			return m_queue.end();
