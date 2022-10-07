@@ -296,7 +296,7 @@ namespace Daqromancy {
 					changed = true;
 				}
 				ImGui::TableNextColumn();
-				if (ImGui::InputInt(fmt::format("##flatTopDelay_{0}", i).c_str(), &channel.decayTimeConst, 0, 0))
+				if (ImGui::InputInt(fmt::format("##flatTopDelay_{0}", i).c_str(), &channel.flatTopDelay, 0, 0))
 				{
 					changed = true;
 				}
