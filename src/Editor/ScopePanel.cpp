@@ -56,7 +56,7 @@ namespace Daqromancy {
 					{
 						m_selectedBoard = boardArgs.handle;
 						availChannels = boardArgs.channels;
-						selectedBoardString = fmt::format("{0}", m_selectedBoard);
+						selectedBoardString = boardArgs.name;
 						if (boardArgs.firmware == CAEN_DGTZ_DPPFirmware_PHA)
 						{
 							const auto& phaParams = m_project->GetPHAWaveParameters(boardArgs.handle);

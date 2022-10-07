@@ -258,24 +258,29 @@ namespace Daqromancy {
                     if (panel_status)
                     {
                         //Update project
-                        m_project->SetDigitizerParameters(panel.GetDigitizerHandle(), panel.GetDigitizerParameters());
-                        if (panel.GetPanelType() == DigitizerPanel::Type::PHA)
+                        int handle  = panel.GetDigitizerHandle();
+                        DigitizerPanel::Type type = panel.GetPanelType();
+                        m_project->SetDigitizerParameters(handle, panel.GetDigitizerParameters());
+                        if (type == DigitizerPanel::Type::PHA)
                         {
-                            m_project->SetPHAParameters(panel.GetDigitizerHandle(), panel.GetPHAChannelParameters());
-                            m_project->SetPHAWaveParameters(panel.GetDigitizerHandle(), panel.GetPHAWaveParameters());
+                            m_project->SetPHAParameters(handle, panel.GetPHAChannelParameters());
+                            m_project->SetPHAWaveParameters(handle, panel.GetPHAWaveParameters());
                         }
-                        else if (panel.GetPanelType() == DigitizerPanel::Type::PSD)
+                        else if (type == DigitizerPanel::Type::PSD)
                         {
-                            m_project->SetPSDParameters(panel.GetDigitizerHandle(), panel.GetPSDChannelParameters());
-                            m_project->SetPSDWaveParameters(panel.GetDigitizerHandle(), panel.GetPSDWaveParameters());
+                            m_project->SetPSDParameters(handle, panel.GetPSDChannelParameters());
+                            m_project->SetPSDWaveParameters(handle, panel.GetPSDWaveParameters());
                         }
                         else
                         {
                             DY_WARN("Unidentified digitizer type attempting to communicate with project");
                         }
                         //Emit event to update aquisition side
-                        AcqParametersEvent e(DigitizerAccessType::Single, panel.GetDigitizerHandle());
+                        AcqParametersEvent e(DigitizerAccessType::Single, handle);
                         m_eventCallback(e);
+
+                        //Load back any changes CAEN made, sometimes specific numbers are invalid
+                        UpdateDigitizerPanels();
                     }
 
                 }
