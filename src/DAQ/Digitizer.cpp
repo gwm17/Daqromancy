@@ -63,14 +63,13 @@ namespace Daqromancy {
             m_args.model = CAEN_DGTZ_BoardModel_t::CAEN_DGTZ_V1740;
         else
             m_args.model = CAEN_DGTZ_BoardModel_t::CAEN_DGTZ_DT5720;
-        m_args.name = info.ModelName + std::to_string(info.SerialNumber);
+        m_args.name = info.ModelName + std::string("_") + std::to_string(info.SerialNumber);
         m_args.firmware = CAEN_DGTZ_DPPFirmware_PHA;
         m_args.channels = info.Channels;
 
         m_channelParams.resize(info.Channels);
         m_eventCountsPerChannel = new uint32_t[info.Channels];
         m_eventData = new CAEN_DGTZ_DPP_PHA_Event_t*[info.Channels];
-        m_waveData = new CAEN_DGTZ_DPP_PHA_Waveforms_t*[info.Channels];
 
         for (int i = 0; i < info.Channels; i++)
         {
@@ -277,16 +276,14 @@ namespace Daqromancy {
         m_args.status |= CAEN_DGTZ_MallocReadoutBuffer(m_args.handle, &m_lowBuffer, &m_lowBufferSize);
         //void casts are soooo bad .... but required by CAEN API
         m_args.status |= CAEN_DGTZ_MallocDPPEvents(m_args.handle, (void**)(m_eventData), &m_eventBufferSize); 
-        for(int channel=0; channel<m_internalData.Channels; channel++)
-            m_args.status |= CAEN_DGTZ_MallocDPPWaveforms(m_args.handle, (void**)(&m_waveData[channel]), &m_waveBufferSize);
+        m_args.status |= CAEN_DGTZ_MallocDPPWaveforms(m_args.handle, (void**)(&m_waveData), &m_waveBufferSize);
     }
 
     void DigitizerPHA::DeallocateMemory()
     {
         m_args.status |= CAEN_DGTZ_FreeReadoutBuffer(&m_lowBuffer);
         m_args.status |= CAEN_DGTZ_FreeDPPEvents(m_args.handle, (void**)(m_eventData));
-        for(int i=0; i<m_internalData.Channels; i++)
-            m_args.status |= CAEN_DGTZ_FreeDPPWaveforms(m_args.handle, (void*)(m_waveData[i]));
+        m_args.status |= CAEN_DGTZ_FreeDPPWaveforms(m_args.handle, (void*)(m_waveData));
     }
 
     void DigitizerPHA::ReadData(std::vector<DYData>& buffer)
@@ -300,7 +297,7 @@ namespace Daqromancy {
             return;
         }
 
-        m_args.status |= CAEN_DGTZ_GetDPPEvents(m_args.handle, m_lowBuffer, m_lowBufferSize, (void**)(&m_eventData), m_eventCountsPerChannel);
+        m_args.status |= CAEN_DGTZ_GetDPPEvents(m_args.handle, m_lowBuffer, m_lowBufferSize, (void**)(m_eventData), m_eventCountsPerChannel);
         size_t waveSize;
         DYData tempData;
         tempData.board = m_args.handle;
@@ -318,15 +315,15 @@ namespace Daqromancy {
                 if(m_digitizerParams.dppAcqMode != CAEN_DGTZ_DPP_ACQ_MODE_List)
                 {
                     CAEN_DGTZ_DecodeDPPWaveforms(m_args.handle, (void*)&(m_eventData[i][j]), m_waveData);
-                    tempData.waveSize = m_waveData[i]->Ns;
-                    waveSize = m_waveData[i]->Ns;
+                    tempData.waveSize = m_waveData->Ns;
+                    waveSize = m_waveData->Ns;
                     if(waveSize != 0)
                     {
                         //Copy the data to our vectors PHA supports 2 analog traces and 2 digital traces
-                        tempData.trace1Samples.assign(m_waveData[i]->Trace1, m_waveData[i]->Trace1 + waveSize);
-                        tempData.trace2Samples.assign(m_waveData[i]->Trace2, m_waveData[i]->Trace2 + waveSize); //This is all zero if in single analog trace mode
-                        tempData.digitalTrace1Samples.assign(m_waveData[i]->DTrace1, m_waveData[i]->DTrace1 + waveSize);
-                        tempData.digitalTrace2Samples.assign(m_waveData[i]->DTrace2, m_waveData[i]->DTrace2 + waveSize);
+                        tempData.trace1Samples.assign(m_waveData->Trace1, m_waveData->Trace1 + waveSize);
+                        tempData.trace2Samples.assign(m_waveData->Trace2, m_waveData->Trace2 + waveSize); //This is all zero if in single analog trace mode
+                        tempData.digitalTrace1Samples.assign(m_waveData->DTrace1, m_waveData->DTrace1 + waveSize);
+                        tempData.digitalTrace2Samples.assign(m_waveData->DTrace2, m_waveData->DTrace2 + waveSize);
                     }
                 }
                 buffer.push_back(tempData);
@@ -358,14 +355,13 @@ namespace Daqromancy {
             m_args.model = CAEN_DGTZ_BoardModel_t::CAEN_DGTZ_V1740;
         else
             m_args.model = CAEN_DGTZ_BoardModel_t::CAEN_DGTZ_DT5720;
-        m_args.name = info.ModelName + std::to_string(info.SerialNumber);
+        m_args.name = info.ModelName + std::string(" ") + std::to_string(info.SerialNumber);
         m_args.firmware = CAEN_DGTZ_DPPFirmware_PSD;
         m_args.channels = info.Channels;
 
         m_channelParams.resize(info.Channels);
         m_eventCountsPerChannel = new uint32_t[info.Channels];
         m_eventData = new CAEN_DGTZ_DPP_PSD_Event_t*[info.Channels];
-        m_waveData = new CAEN_DGTZ_DPP_PSD_Waveforms_t*[info.Channels];
         LoadDigitizerParameters();
         LoadChannelParameters();
         //Must load default parameters here to generate a buffer 
@@ -560,16 +556,14 @@ namespace Daqromancy {
         m_args.status |= CAEN_DGTZ_MallocReadoutBuffer(m_args.handle, &m_lowBuffer, &m_lowBufferSize);
         //void casts are soooo bad .... but required by CAEN API
         m_args.status |= CAEN_DGTZ_MallocDPPEvents(m_args.handle, (void**)(m_eventData), &m_eventBufferSize); 
-        for(int channel=0; channel<m_internalData.Channels; channel++)
-            m_args.status |= CAEN_DGTZ_MallocDPPWaveforms(m_args.handle, (void**)(&m_waveData[channel]), &m_waveBufferSize);
+        m_args.status |= CAEN_DGTZ_MallocDPPWaveforms(m_args.handle, (void**)(&m_waveData), &m_waveBufferSize);
     }
 
     void DigitizerPSD::DeallocateMemory()
     {
         m_args.status |= CAEN_DGTZ_FreeReadoutBuffer(&m_lowBuffer);
         m_args.status |= CAEN_DGTZ_FreeDPPEvents(m_args.handle, (void**)(m_eventData));
-        for(int i=0; i<m_internalData.Channels; i++)
-            m_args.status |= CAEN_DGTZ_FreeDPPWaveforms(m_args.handle, (void*)(m_waveData[i]));
+        m_args.status |= CAEN_DGTZ_FreeDPPWaveforms(m_args.handle, (void*)(m_waveData));
     }
 
     void DigitizerPSD::ReadData(std::vector<DYData>& buffer)
@@ -583,7 +577,7 @@ namespace Daqromancy {
             return;
         }
 
-        m_args.status |= CAEN_DGTZ_GetDPPEvents(m_args.handle, m_lowBuffer, m_lowBufferSize, (void**)(&m_eventData), m_eventCountsPerChannel);
+        m_args.status |= CAEN_DGTZ_GetDPPEvents(m_args.handle, m_lowBuffer, m_lowBufferSize, (void**)(m_eventData), m_eventCountsPerChannel);
         size_t waveSize;
         DYData tempData;
         tempData.board = m_args.handle;
@@ -602,15 +596,15 @@ namespace Daqromancy {
                 if(m_digitizerParams.dppAcqMode != CAEN_DGTZ_DPP_ACQ_MODE_List)
                 {
                     CAEN_DGTZ_DecodeDPPWaveforms(m_args.handle, (void*)&(m_eventData[i][j]), m_waveData);
-                    tempData.waveSize = m_waveData[i]->Ns;
-                    waveSize = m_waveData[i]->Ns;
+                    tempData.waveSize = m_waveData->Ns;
+                    waveSize = m_waveData->Ns;
                     if(tempData.waveSize != 0)
                     {
                         //Copy the data to our vectors PHA supports 2 analog traces and 2 digital traces
-                        tempData.trace1Samples.assign(m_waveData[i]->Trace1, m_waveData[i]->Trace1 + waveSize);
-                        tempData.trace2Samples.assign(m_waveData[i]->Trace2, m_waveData[i]->Trace2 + waveSize); //This is all zero if in single analog trace mode
-                        tempData.digitalTrace1Samples.assign(m_waveData[i]->DTrace1, m_waveData[i]->DTrace1 + waveSize);
-                        tempData.digitalTrace2Samples.assign(m_waveData[i]->DTrace2, m_waveData[i]->DTrace2 + waveSize);
+                        tempData.trace1Samples.assign(m_waveData->Trace1, m_waveData->Trace1 + waveSize);
+                        tempData.trace2Samples.assign(m_waveData->Trace2, m_waveData->Trace2 + waveSize); //This is all zero if in single analog trace mode
+                        tempData.digitalTrace1Samples.assign(m_waveData->DTrace1, m_waveData->DTrace1 + waveSize);
+                        tempData.digitalTrace2Samples.assign(m_waveData->DTrace2, m_waveData->DTrace2 + waveSize);
                     }
                 }
                 buffer.push_back(tempData);

@@ -31,7 +31,7 @@ namespace YAML {
 
 			args.type = (CAEN_DGTZ_ConnectionType) node["ConnectionType"].as<int>();
 			args.linkNumber = node["LinkNumber"].as<int>();
-			args.conetNode = node["ConetNode"].as<int>();
+			args.conetNode = node["CONETNode"].as<int>();
 			args.vmeAddress = node["VMEAddress"].as<uint32_t>();
 			args.handle = node["Handle"].as<int>();
 			args.model = (CAEN_DGTZ_BoardModel_t) node["Model"].as<int>();

@@ -179,7 +179,7 @@ namespace Daqromancy {
 
         //CAEN required data storage, does not interface to other parts of the program
         CAEN_DGTZ_DPP_PHA_Event_t** m_eventData;
-        CAEN_DGTZ_DPP_PHA_Waveforms_t** m_waveData;
+        CAEN_DGTZ_DPP_PHA_Waveforms_t* m_waveData;
         CAEN_DGTZ_DPP_PHA_Params_t m_caenParams;
 
         std::vector<PHAParameters> m_channelParams;
@@ -218,7 +218,7 @@ namespace Daqromancy {
 
         //CAEN required data storage, does not interface to other parts of the program
         CAEN_DGTZ_DPP_PSD_Event_t** m_eventData;
-        CAEN_DGTZ_DPP_PSD_Waveforms_t** m_waveData;
+        CAEN_DGTZ_DPP_PSD_Waveforms_t* m_waveData;
         CAEN_DGTZ_DPP_PSD_Params_t m_caenParams;
 
         std::vector<PSDParameters> m_channelParams;

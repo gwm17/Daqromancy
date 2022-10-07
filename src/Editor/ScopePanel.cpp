@@ -1,18 +1,16 @@
 #include "ScopePanel.h"
 
+#include "DAQ/DigitizerDefs.h"
+
 #include "imgui.h"
 #include "implot.h"
 
 namespace Daqromancy {
 
-	ScopePanel::ScopePanel(int nboards) :
-		m_dataReady(false), m_selectedBoard(0), m_selectedChannel(0), m_maxNumBoards(nboards)
+	ScopePanel::ScopePanel(const DYProject::Ref& project) :
+		m_dataReady(false), m_selectedBoard(-1), m_selectedChannel(-1), m_selectedSamplingPeriod(0.0), m_project(project)
 	{
 		m_dataHandle = DataDistributor::Connect();
-		for (int i = 0; i < nboards; i++)
-			m_boardListForImGui.push_back(fmt::format("{0}", i));
-		for (int i = 0; i < 16; i++) //bad hardcode, fix later
-			m_channelListForImGui.push_back(fmt::format("{0}", i));
 	}
 
 	ScopePanel::~ScopePanel()
@@ -31,9 +29,7 @@ namespace Daqromancy {
 				if (hit.board == m_selectedBoard && hit.channel == m_selectedChannel)
 				{
 					m_selectedHit = hit;
-					m_selectedXAxis.clear();
-					for (int i = 0; i < hit.waveSize; i++)
-						m_selectedXAxis.push_back(i);
+					m_selectedSamplingPeriod = GetSamplingPeriod(m_project->GetDigitizerArgs(m_selectedBoard).model);
 					break;
 				}
 			}
@@ -42,45 +38,65 @@ namespace Daqromancy {
 
 	void ScopePanel::OnImGuiRender()
 	{
-		static std::string selectedBoardString = fmt::format("{0}", m_selectedBoard);
-		static std::string selectedChannelString = fmt::format("{0}", m_selectedChannel);
+		static std::string selectedBoardString = "";
+		static std::string selectedChannelString = "";
+		static int availChannels = -1;
+		static std::string analog1 = "##analog1";
+		static std::string analog2 = "##analog2";
+		static std::string digital1 = "##digital1";
+		static std::string digital2 = "##digital2";
 
 		if (ImGui::Begin("Oscilloscope"))
 		{
 			if (ImGui::BeginCombo("Board", selectedBoardString.c_str()))
 			{
-				for (int board=0; board<m_maxNumBoards; board++)
+				for (const auto& boardArgs : m_project->GetDigitizerArgsList())
 				{
-					if (ImGui::Selectable(m_boardListForImGui[board].c_str(), board == m_selectedBoard))
+					if (ImGui::Selectable(boardArgs.name.c_str(), boardArgs.handle == m_selectedBoard))
 					{
-						m_selectedBoard = board;
+						m_selectedBoard = boardArgs.handle;
+						availChannels = boardArgs.channels;
 						selectedBoardString = fmt::format("{0}", m_selectedBoard);
-						m_selectedXAxis.clear();
+						if (boardArgs.firmware == CAEN_DGTZ_DPPFirmware_PHA)
+						{
+							const auto& phaParams = m_project->GetPHAWaveParameters(boardArgs.handle);
+							analog1 = PHAVirtualProbe1ToString(phaParams.analogProbe1);
+							analog2 = PHAVirtualProbe2ToString(phaParams.analogProbe2);
+							digital1 = PHADigitalProbeToString(phaParams.digitalProbe1);
+							digital2 = "Trigger";
+						}
+						else if (boardArgs.firmware == CAEN_DGTZ_DPPFirmware_PSD)
+						{
+							const auto& psdParams = m_project->GetPSDWaveParameters(boardArgs.handle);
+							analog1 = PSDVirtualProbe1ToString(psdParams.analogProbe1);
+							analog2 = PSDVirtualProbe2ToString(psdParams.analogProbe2);
+							digital1 = PSDDigitalProbe1ToString(psdParams.digitalProbe1);
+							digital2 = PSDDigitalProbe2ToString(psdParams.digitalProbe2);
+						}
 					}
 				}
 				ImGui::EndCombo();
 			}
 			if (ImGui::BeginCombo("Channel", selectedChannelString.c_str()))
 			{
-				for (int channel = 0; channel < 16; channel++) //hardcoded bad, fix later
+				for (int channel = 0; channel < availChannels; channel++)
 				{
-					if (ImGui::Selectable(m_channelListForImGui[channel].c_str(), channel == m_selectedChannel))
+					if (ImGui::Selectable(fmt::format("{0}", channel).c_str(), channel == m_selectedChannel))
 					{
 						m_selectedChannel = channel;
 						selectedChannelString = fmt::format("{0}", m_selectedChannel);
-						m_selectedXAxis.clear();
 					}
 				}
 				ImGui::EndCombo();
 			}
 			if (ImPlot::BeginPlot("ScopeView", ImVec2(-1,-1)))
 			{
-				if (m_selectedXAxis.size() != 0)
+				if (m_selectedHit.waveSize != 0)
 				{
-					ImPlot::PlotLine("AnalogProbe1", (ImU16*)m_selectedXAxis.data(), (ImU16*)m_selectedHit.trace1Samples.data(), m_selectedXAxis.size());
-					ImPlot::PlotLine("AnalogProbe2", (ImU16*)m_selectedXAxis.data(), (ImU16*)m_selectedHit.trace2Samples.data(), m_selectedXAxis.size());
-					ImPlot::PlotLine("DigitialProbe1", (ImU16*)m_selectedXAxis.data(), (ImU16*)m_selectedHit.digitalTrace1Samples.data(), m_selectedXAxis.size());
-					ImPlot::PlotLine("DigitialProbe2", (ImU16*)m_selectedXAxis.data(), (ImU16*)m_selectedHit.digitalTrace2Samples.data(), m_selectedXAxis.size());
+					ImPlot::PlotLine(analog1.c_str(), (ImU16*)m_selectedHit.trace1Samples.data(), m_selectedHit.trace1Samples.size(), m_selectedSamplingPeriod);
+					ImPlot::PlotLine(analog2.c_str(), (ImU16*)m_selectedHit.trace2Samples.data(), m_selectedHit.trace2Samples.size(), m_selectedSamplingPeriod);
+					ImPlot::PlotLine(digital1.c_str(), (ImU8*)m_selectedHit.digitalTrace1Samples.data(), m_selectedHit.digitalTrace1Samples.size(), m_selectedSamplingPeriod);
+					ImPlot::PlotLine(digital2.c_str(), (ImU8*)m_selectedHit.digitalTrace2Samples.data(), m_selectedHit.digitalTrace2Samples.size(), m_selectedSamplingPeriod);
 				}
 				ImPlot::EndPlot();
 			}

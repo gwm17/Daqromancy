@@ -231,7 +231,7 @@ namespace Daqromancy {
                             AcqDPPModeEvent e;
                             m_eventCallback(e);
 
-                            m_scopePanel = new ScopePanel(m_digiPanels.size());
+                            m_scopePanel = new ScopePanel(m_project);
                         }
                         ImGui::EndCombo();
                     }

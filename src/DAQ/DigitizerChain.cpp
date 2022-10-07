@@ -64,7 +64,7 @@ namespace Daqromancy {
 		switch (mode)
 		{
 		case DPPAcqMode::List: modeIn = CAEN_DGTZ_DPP_ACQ_MODE_List; break;
-		case DPPAcqMode::Waves: modeIn = CAEN_DGTZ_DPP_ACQ_MODE_Oscilloscope; break;
+		case DPPAcqMode::Waves: modeIn = CAEN_DGTZ_DPP_ACQ_MODE_Mixed; break;
 		case DPPAcqMode::None: DY_WARN("Attempted to set DPPAcqMode::None!"); return;
 		}
 

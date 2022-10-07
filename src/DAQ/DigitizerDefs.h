@@ -242,17 +242,17 @@ namespace Daqromancy {
     //Option of dual analog, which types (digital probe 2 is always trigger for PHA)
     struct PHAWaveParameters
     {
-        CAEN_DGTZ_DPP_VirtualProbe_t isDual = CAEN_DGTZ_DPP_VIRTUALPROBE_SINGLE; //Default to a single analog trace
-        PHAVirtualProbe1Options analogProbe1 = PHAVirtualProbe1Options::PHAVP1_Input; //Main analog trace defaults to input signal;
-        PHAVirtualProbe2Options analogProbe2 = PHAVirtualProbe2Options::PHAVP2_None; //Default val; in default config wont be displayed
-        PHADigitalProbe1Options digitalProbe1 = PHADigitalProbe1Options::PHADP_TriggerWindow; //Idk guess this is good default
+        CAEN_DGTZ_DPP_VirtualProbe_t isDual = CAEN_DGTZ_DPP_VIRTUALPROBE_DUAL; //Default to a single analog trace
+        PHAVirtualProbe1Options analogProbe1 = PHAVirtualProbe1Options::PHAVP1_Delta2; //Main analog trace defaults to delta2;
+        PHAVirtualProbe2Options analogProbe2 = PHAVirtualProbe2Options::PHAVP2_Input; //Default val; in default config wont be displayed
+        PHADigitalProbe1Options digitalProbe1 = PHADigitalProbe1Options::PHADP_Peaking; //Idk guess this is good default
     };
 
     struct PSDWaveParameters
     {
-        CAEN_DGTZ_DPP_VirtualProbe_t isDual = CAEN_DGTZ_DPP_VIRTUALPROBE_SINGLE; //Default to a single analog trace
+        CAEN_DGTZ_DPP_VirtualProbe_t isDual = CAEN_DGTZ_DPP_VIRTUALPROBE_DUAL; //Default to a single analog trace
         PSDVirtualProbe1Options analogProbe1 = PSDVirtualProbe1Options::PSDVP1_Input; //Main trace defaults to input
-        PSDVirtualProbe2Options analogProbe2 = PSDVirtualProbe2Options::PSDVP2_None; //Defaults to off
+        PSDVirtualProbe2Options analogProbe2 = PSDVirtualProbe2Options::PSDVP2_Baseline; //Defaults to off
         PSDDigitalProbe1Options digitalProbe1 = PSDDigitalProbe1Options::PSDDP1_Gate; //Defaults to long gate
         PSDDigitalProbe2Options digitalProbe2 = PSDDigitalProbe2Options::PSDDP2_GateShort; //Defaults to short gate
     };
