@@ -133,9 +133,7 @@ namespace Daqromancy {
 			ImGui::TableSetupColumn("Record Length (ns)");
 			ImGui::TableSetupColumn("Event Aggregation");
 			ImGui::TableSetupColumn("Acq. Mode");
-			//ImGui::TableSetupColumn("DPP Acq. Mode");
 			ImGui::TableSetupColumn("Board IO Level");
-			//ImGui::TableSetupColumn("Trigger Mode");
 			ImGui::TableSetupColumn("Sync Mode");
 			ImGui::TableHeadersRow();
 
@@ -444,7 +442,31 @@ namespace Daqromancy {
 		static std::string tempString; //useful for comps in widgets
 		if (!m_digitizerEnabled)
 			ImGui::BeginDisabled();
-		if (ImGui::BeginTable("PSD Channel Parameters", 21, tableFlags | ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY, ImVec2(0, 300)))
+
+		if (ImGui::BeginTable("PSD Board Parameters", 2, tableFlags))
+		{
+			ImGui::TableSetupColumn("Baseline Threshold (lsb)");
+			ImGui::TableSetupColumn("Trigger Hold-Off (ns)");
+			ImGui::TableHeadersRow();
+
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			if (ImGui::InputInt("##baseThresh", &(m_psdChannels[0].baselineThreshold), 0, 0))
+			{
+				changed = true;
+			}
+
+			ImGui::TableNextColumn();
+			ImGui::TableNextColumn();
+			if (ImGui::InputInt("##trigHold", &(m_psdChannels[0]).triggerHoldOff, 0, 0))
+			{
+				changed = true;
+			}
+
+			ImGui::EndTable();
+		}
+
+		if (ImGui::BeginTable("PSD Channel Parameters", 17, tableFlags | ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY, ImVec2(0, 300)))
 		{
 			ImGui::TableSetupColumn("Channel");
 			ImGui::TableSetupColumn("Enable/Disable");
@@ -452,9 +474,7 @@ namespace Daqromancy {
 			ImGui::TableSetupColumn("DC Offset (%)");
 			ImGui::TableSetupColumn("Polarity");
 			ImGui::TableSetupColumn("Dynamic Range");
-			ImGui::TableSetupColumn("Baseline Threshold (lsb)");
 			ImGui::TableSetupColumn("Trigger Threshold (lsb)");
-			ImGui::TableSetupColumn("Trigger Hold-Off (ns)");
 			ImGui::TableSetupColumn("Self-Trigger");
 			ImGui::TableSetupColumn("Charge Sensitivity");
 			ImGui::TableSetupColumn("Short Gate (ns)");
@@ -465,8 +485,6 @@ namespace Daqromancy {
 			ImGui::TableSetupColumn("Discrimintaor Mode");
 			ImGui::TableSetupColumn("CFD Fraction");
 			ImGui::TableSetupColumn("CFD Delay (ns)");
-			ImGui::TableSetupColumn("PileUp Reject.");
-			ImGui::TableSetupColumn("Purity Gap");
 			ImGui::TableHeadersRow();
 
 			for (size_t i = 0; i < m_psdChannels.size(); i++)
@@ -527,17 +545,7 @@ namespace Daqromancy {
 					ImGui::EndCombo();
 				}
 				ImGui::TableNextColumn();
-				if (ImGui::InputInt(fmt::format("##baseThresh_{0}", i).c_str(), &channel.baselineThreshold, 0, 0))
-				{
-					changed = true;
-				}
-				ImGui::TableNextColumn();
 				if (ImGui::InputInt(fmt::format("##triggerThresh_{0}", i).c_str(), &channel.triggerThreshold, 0, 0))
-				{
-					changed = true;
-				}
-				ImGui::TableNextColumn();
-				if (ImGui::InputInt(fmt::format("##trigHold_{0}", i).c_str(), &channel.triggerHoldOff, 0, 0))
 				{
 					changed = true;
 				}
@@ -646,31 +654,45 @@ namespace Daqromancy {
 				{
 					changed = true;
 				}
-				ImGui::TableNextColumn();
-				tempString = PileUpModeToString(channel.pileUpRejection);
-				if (ImGui::BeginCombo(fmt::format("##purSwitch_{0}", i).c_str(), tempString.c_str()))
-				{
-					if (ImGui::Selectable("On", CAEN_DGTZ_DPP_PSD_PUR_Enabled == channel.pileUpRejection))
-					{
-						changed = true;
-						channel.discrminatorType = CAEN_DGTZ_DPP_PSD_PUR_Enabled;
-					}
-					if (ImGui::Selectable("Off", CAEN_DGTZ_DPP_PSD_PUR_DetectOnly == channel.pileUpRejection))
-					{
-						changed = true;
-						channel.discrminatorType = CAEN_DGTZ_DPP_PSD_PUR_DetectOnly;
-					}
-					ImGui::EndCombo();
-				}
-				ImGui::TableNextColumn();
-				if (ImGui::InputInt(fmt::format("##purityGap_{0}", i).c_str(), &channel.purgap, 0, 0))
-				{
-					changed = true;
-				}
 
 				if (!channel.isEnabled)
 					ImGui::EndDisabled();
 			}
+			ImGui::EndTable();
+		}
+
+		//Pile-up rejection is global to digitizer, but is special for psd. Control via channel 0.
+		if (ImGui::BeginTable("Pile-up Rejection", 2, tableFlags))
+		{
+			ImGui::TableSetupColumn("PileUp Reject.");
+			ImGui::TableSetupColumn("Purity Gap");
+			ImGui::TableHeadersRow();
+
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+
+			tempString = PileUpModeToString(m_psdChannels[0].pileUpRejection);
+			if (ImGui::BeginCombo("##purSwitch", tempString.c_str()))
+			{
+				if (ImGui::Selectable("On", CAEN_DGTZ_DPP_PSD_PUR_Enabled == m_psdChannels[0].pileUpRejection))
+				{
+					changed = true;
+					m_psdChannels[0].pileUpRejection = CAEN_DGTZ_DPP_PSD_PUR_Enabled;
+				}
+				if (ImGui::Selectable("Off", CAEN_DGTZ_DPP_PSD_PUR_DetectOnly == m_psdChannels[0].pileUpRejection))
+				{
+					changed = true;
+					m_psdChannels[0].pileUpRejection = CAEN_DGTZ_DPP_PSD_PUR_DetectOnly;
+				}
+				ImGui::EndCombo();
+			}
+
+			ImGui::TableNextColumn();
+			if (ImGui::InputInt("##purityGap", &(m_psdChannels[0].purgap), 0, 0))
+			{
+				changed = true;
+			}
+
 			ImGui::EndTable();
 		}
 		if (!m_digitizerEnabled)

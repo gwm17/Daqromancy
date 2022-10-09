@@ -502,7 +502,10 @@ namespace Daqromancy {
             m_caenParams.trgc[i] = (CAEN_DGTZ_DPP_TriggerConfig_t)1; // Deprecated, must be set to one according to docs
         }
         //These are like global digitizer params but PSD specific. Here we treat first channel as "global" setting (similar to CoMPASS)
-        
+        m_caenParams.blthr = m_channelParams[0].baselineThreshold;
+        m_caenParams.trgho = m_channelParams[0].triggerHoldOff;
+        m_caenParams.purh = m_channelParams[0].pileUpRejection;
+        m_caenParams.purgap = m_channelParams[0].purgap;
 
         /*
             Something not immediately clear... there is no GetDPPParameters function
@@ -533,7 +536,6 @@ namespace Daqromancy {
             m_channelParams[i].cfdDelay = m_caenParams.cfdd[i] * m_samplingTime;
         }
         m_channelParams[0].baselineThreshold = m_caenParams.blthr;
-        m_channelParams[0].bltmo = m_caenParams.bltmo;
         m_channelParams[0].triggerHoldOff = m_caenParams.trgho;
         m_channelParams[0].pileUpRejection = m_caenParams.purh;
         m_channelParams[0].purgap = m_caenParams.purgap;
